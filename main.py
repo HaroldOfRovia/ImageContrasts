@@ -1,4 +1,5 @@
 from PIL import Image
+import os
 
 # Маски для обнаружения линий
 h10 = [[-1, -1, -1], [2, 2, 2], [-1, -1, -1]]
@@ -84,6 +85,8 @@ def main():
             a = round(arr[i][j] / max_val * 255)
             new_pixel_map[i, j] = (a, a, a)
 
+    if not os.path.isdir('images_result'):
+        os.makedirs('images_result')
     new_img.save("images_result/result.png")
 
 
