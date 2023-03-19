@@ -1,4 +1,3 @@
-import os
 from PIL import Image
 
 
@@ -20,7 +19,7 @@ h16 = [[1, 1, -1], [1, -2, -1], [1, 1, -1]]
 h17 = [[1, 1, 1], [1, -2, -1], [1, -1, -1]]
 gradient_masks = [h10, h11, h12, h13, h14, h15, h17]
 
-# Варианты масок для реализации оператора Лапласса
+# Варианты масок для реализации оператора Лапласа
 l1 = [[0, -1, 0], [-1, 4, -1], [0, -1, 0]]
 l2 = [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]
 l3 = [[1, -2, 1], [-2, 4, -2], [1, -2, 1]]
@@ -39,9 +38,9 @@ h25 = [[-1, -1, 0], [-1, 0, 1], [0, 1, 1]]
 prewitt_masks = [h20, h21, h24, h25]
 
 # Варианты масок Собела
-h22 = [[-1, 0, 1], [-2, 0, 2], [-2, 0, 1]]
+h22 = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
 h23 = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
-h26 = [[0, 1, 2], [1, 0, 1], [-2, -1, 0]]
+h26 = [[0, 1, 2], [-1, 0, 1], [-2, -1, 0]]
 h27 = [[-2, -1, 0], [-1, 0, 1], [0, 1, 2]]
 sobel_masks = [h22, h23, h26, h27]
 
@@ -58,6 +57,16 @@ kirsch_masks = [h28, h29, h30, h31, h32, h33, h34, h35]
 
 
 def get_mask_num(x, y, mask, pixel_map, width, height):
+    """
+    Применяет маску к пикселю и возвращает результирующее значение
+    :param x: позиция пикселя на оси x
+    :param y: позиция пикселя на оси y
+    :param mask: маска, которую необходимо применить
+    :param pixel_map: карта пикселей исходного изображения
+    :param width: ширина изображения
+    :param height: высота изображения
+    :return: результат применения маски
+    """
     result = 0
     for i in range(-1, len(mask) - 1):
         for j in range(-1, len(mask) - 1):
@@ -75,6 +84,12 @@ def get_mask_num(x, y, mask, pixel_map, width, height):
 
 
 def make_contrast(image: Image, value):
+    """
+    Основной алгоритм выделения контуров изображения
+    :param image: оригинальное изображение
+    :param value: тип применяемого оператора
+    :return: новое изображение с контурами оригинального изображения
+    """
     image = image.convert("L")
     pixel_map = image.load()
     width, height = image.size
@@ -99,6 +114,7 @@ def make_contrast(image: Image, value):
         curr_masks = kirsch_masks
 
     arr = []
+    max_val = -1
     for i in range(width):
         arr.append([])
         for j in range(height):
@@ -109,19 +125,12 @@ def make_contrast(image: Image, value):
             for mask in curr_masks:
                 tmp_arr.append(abs(int(get_mask_num(i, j, mask, pixel_map, width, height))))
             arr[i].append(max(tmp_arr))
-
-    max_val = -1
-    for i in range(width):
-        for j in range(height):
-            if arr[i][j] > max_val:
-                max_val = arr[i][j]
+            if max(tmp_arr) > max_val:
+                max_val = max(tmp_arr)
 
     for i in range(width):
         for j in range(height):
             a = round(arr[i][j] / max_val * 255)
             new_pixel_map[i, j] = (a, a, a)
 
-    if not os.path.isdir('images_result'):
-        os.makedirs('images_result')
-    new_img.save('images_result/result.jpg')
     return new_img

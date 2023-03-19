@@ -1,3 +1,4 @@
+import os
 from tkinter import *
 from tkinter import filedialog
 from PIL import Image, ImageTk
@@ -67,8 +68,7 @@ class MainWindow:
         try:
             self.image_input = Image.open(file)
             size = get_img_size(self.image_input)
-            self.image_input = self.image_input.resize((size[0], size[1]), Image.ANTIALIAS)
-            self.photo_input = ImageTk.PhotoImage(self.image_input)
+            self.photo_input = ImageTk.PhotoImage(self.image_input.resize((size[0], size[1]), Image.ANTIALIAS))
             self.canvas_image_input = self.canvas_input.create_image(0, 0, anchor='nw', image=self.photo_input)
         except:
             pass
@@ -76,9 +76,11 @@ class MainWindow:
     def get_new_image(self):
         try:
             self.image_output = make_contrast(self.image_input, self.value.get())
+            if not os.path.isdir('images_result'):
+                os.makedirs('images_result')
+            self.image_output.save('images_result/result.jpg')
             size = get_img_size(self.image_output)
-            self.image_output = self.image_output.resize((size[0], size[1]), Image.ANTIALIAS)
-            self.photo_output = ImageTk.PhotoImage(self.image_output)
+            self.photo_output = ImageTk.PhotoImage(self.image_output.resize((size[0], size[1]), Image.ANTIALIAS))
             self.canvas_image_output = self.canvas_output.create_image(0, 0, anchor='nw', image=self.photo_output)
         except:
             pass
